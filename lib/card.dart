@@ -9,13 +9,21 @@ class CardGame extends StatelessWidget {
   final int index ;
   final Color color;
   final String type;
+  final String size;
 
   CardGame({Key? key,
     required this.cardNumber,
     required this.index,
     required this.color,
-    required this.type
+    required this.type,
+    required this.size
   }) : super(key: key);
+
+
+  static const copa = "assets/copas.png";
+  static const ouro = "assets/ouros.png";
+  static const paus = "assets/paus.png";
+  static const espada = "assets/espadas.png";
 
 
   @override
@@ -31,8 +39,8 @@ class CardGame extends StatelessWidget {
           SizedBox(width: index * 50.0,),
           Container(
             padding: EdgeInsets.all(4),
-            height: 250,
-            width: 180,
+            height: size == "normal" ? 250 : 150,
+            width: size == "normal" ? 180 : 90,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
@@ -45,49 +53,46 @@ class CardGame extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 35,
+                  width: size == "normal" ? 35 : 17,
                   child: Column(
                     children: [
-                      Text(cardNumber, style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: color),),
+                      Text(cardNumber, style: TextStyle(fontSize: size == "normal" ? 30 : 20, fontWeight: FontWeight.bold, color: color),),
                       Image.asset(
-                        type == "C" ? "assets/copas.png" :
-                        type == "O" ? "assets/ouros.png" :
-                        type == "P" ? "assets/paus.png"  :
-                        "assets/espadas.png"
-                        , width: 30,)
+                        type == "C" ? copa :
+                        type == "O" ? ouro :
+                        type == "P" ? paus : espada
+                        , width: size == "normal" ? 30 : 15,)
                     ],
                   ),
                 ),
                 Center(
                   child: Container(
-                    width: 100,
-                    height: 150,
+                    width: size == "normal" ? 100 : 45,
+                    height: size == "normal" ? 150 : 70,
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: Colors.grey)
 
                     ),
                     child: Image.asset(
-                      type == "C" ? "assets/copas.png" :
-                      type == "O" ? "assets/ouros.png" :
-                      type == "P" ? "assets/paus.png"  :
-                      "assets/espadas.png",
+                      type == "C" ? copa :
+                      type == "O" ? ouro :
+                      type == "P" ? paus : espada,
                       width: 35,)
                   ),
                 ),
                 Container(
-                  width: 35,
+                  width: size == "normal" ? 35 : 17,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Image.asset(
-                        type == "C" ? "assets/copas.png" :
-                        type == "O" ? "assets/ouros.png" :
-                        type == "P" ? "assets/paus.png"  :
-                        "assets/espadas.png",
-                        width: 30,),
-                      Text(cardNumber, style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: color),),
+                        type == "C" ? copa :
+                        type == "O" ? ouro :
+                        type == "P" ? paus : espada,
+                        width: size == "normal" ? 30 : 15,),
+                      Text(cardNumber, style: TextStyle(fontSize: size == "normal" ? 30 : 20, fontWeight: FontWeight.bold, color: color),),
                     ],
                   ),
                 ),

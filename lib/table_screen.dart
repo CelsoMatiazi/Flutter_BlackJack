@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:black_jack/cardModel.dart';
+import 'package:flip_card/flip_card.dart';
 import 'package:flutter/material.dart';
 import 'card.dart';
 
@@ -12,10 +13,11 @@ class TableScreen extends StatefulWidget {
 
 class _TableScreenState extends State<TableScreen> {
 
-  List<CardModel> sequence = [];
-  int leftCards = -1;
+  List<CardModel> playerCards = [];
+  List<CardModel> dealer = [];
   List cardValues = ["A","2","3","4","5","6","7","8","9","10","J","Q","K",];
   List naipes = ["C", "O", "P", "S"];
+  int leftCards = -1;
 
 
   double widthCards = 200.0;
@@ -28,7 +30,7 @@ class _TableScreenState extends State<TableScreen> {
     }
   }
 
-  saveCard(){
+  saveCard(String player){
     var random = Random();
     var cardValueIndex = random.nextInt(13);
     var naipeIndex = random.nextInt(4);
@@ -39,11 +41,22 @@ class _TableScreenState extends State<TableScreen> {
         color: setCardColor(naipes[naipeIndex])
     );
 
-    if(!sequence.contains(card)){
-      sequence.add(card);
+
+    if(player == "player"){
+      if(!playerCards.contains(card)){
+        playerCards.add(card);
+      }else{
+        saveCard("player");
+      }
     }else{
-      saveCard();
+      if(!dealer.contains(card)){
+        dealer.add(card);
+      }else{
+        saveCard("dealer");
+      }
     }
+
+
 
   }
   
@@ -60,6 +73,9 @@ class _TableScreenState extends State<TableScreen> {
           children: [
 
             SizedBox(height: 30,),
+
+
+
             Container(
               alignment: Alignment.centerLeft,
               margin: EdgeInsets.only(left: 20, right: 20, bottom: 10),
@@ -71,8 +87,25 @@ class _TableScreenState extends State<TableScreen> {
                   border: Border.all(color: Colors.blueGrey),
                   borderRadius: BorderRadius.circular(15)
               ),
-              child: Image.asset("assets/card.png"),
-
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: dealer.map((card) {
+                  return FlipCard(
+                    front: Image.asset("assets/card.png"),
+                    back: Container(
+                      width: 90,
+                      height: 150,
+                      child: CardGame(
+                        cardNumber: card.value,
+                        color: card.color,
+                        type: card.type,
+                        index: 0,
+                        size: "mini",
+                      ),
+                    ),
+                  );
+                }).toList()
+              )
             ),
 
             Expanded(
@@ -82,16 +115,17 @@ class _TableScreenState extends State<TableScreen> {
                 child: Container(
                   width: widthCards,
                   height: 300,
-                  child: sequence.isNotEmpty ? Stack(
+                  child: playerCards.isNotEmpty ? Stack(
                     children: [
                       Stack(
-                        children: sequence.map((card) {
+                        children: playerCards.map((card) {
                           leftCards++;
                           return CardGame(
                             cardNumber: card.value,
                             color: card.color,
                             type: card.type,
                             index: leftCards,
+                            size: "normal",
                           );
                         }).toList(),
                       ),
@@ -122,8 +156,7 @@ class _TableScreenState extends State<TableScreen> {
                       setState(() {
                         widthCards = widthCards + 50;
                       });
-
-                     saveCard();
+                     saveCard("player");
                   },
                 ),
               ],
@@ -132,6 +165,16 @@ class _TableScreenState extends State<TableScreen> {
         ),
 
       ),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){
+          saveCard('dealer');
+          setState(() {
+
+          });
+        },
+      ),
+
     );
   }
 }
