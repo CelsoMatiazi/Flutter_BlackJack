@@ -10,7 +10,22 @@ class CardModel{
   CardModel({
     required this.value,
     required this.type,
-    required this.color
+    required this.color,
   });
+
+
+  @override
+  bool operator == (Object other) {
+    // TODO: implement ==
+    return (other is CardModel)
+        && other.value == value
+        && other.type == type
+        && other.color == color;
+  }
+
+  @override
+  // TODO: implement hashCode
+  int get hashCode => super.hashCode;
+
 
 }

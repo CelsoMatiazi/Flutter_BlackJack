@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:black_jack/cardModel.dart';
 import 'package:flip_card/flip_card.dart';
+import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
 import 'card.dart';
 
@@ -15,10 +16,13 @@ class _TableScreenState extends State<TableScreen> {
 
   List<CardModel> playerCards = [];
   List<CardModel> dealer = [];
+  List<CardModel> firstDealer = [];
+
   List cardValues = ["A","2","3","4","5","6","7","8","9","10","J","Q","K",];
   List naipes = ["C", "O", "P", "S"];
   int leftCards = -1;
 
+  late FlipCardController _controller;
 
   double widthCards = 200.0;
 
@@ -30,6 +34,9 @@ class _TableScreenState extends State<TableScreen> {
     }
   }
 
+
+
+
   saveCard(String player){
     var random = Random();
     var cardValueIndex = random.nextInt(13);
@@ -38,26 +45,64 @@ class _TableScreenState extends State<TableScreen> {
     CardModel card = CardModel(
         value: cardValues[cardValueIndex],
         type: naipes[naipeIndex],
-        color: setCardColor(naipes[naipeIndex])
+        color: setCardColor(naipes[naipeIndex]),
     );
 
-
     if(player == "player"){
-      if(!playerCards.contains(card)){
+      if( !playerCards.contains(card) &&
+          !dealer.contains(card) &&
+          !firstDealer.contains(card)
+      ) {
         playerCards.add(card);
       }else{
+        print("else Player");
         saveCard("player");
       }
-    }else{
-      if(!dealer.contains(card)){
+    }
+
+
+    if(player == "dealer") {
+      if (!playerCards.contains(card) &&
+          !dealer.contains(card) &&
+          !firstDealer.contains(card)
+      ) {
         dealer.add(card);
-      }else{
+      } else {
+        print("else dealer");
         saveCard("dealer");
       }
     }
 
 
+    if(player == "first"){
+      firstDealer.add(card);
+    }else{
+      saveCard("first");
+    }
 
+  }
+
+
+  startGame()async{
+   await Future.delayed(Duration(seconds: 5));
+   setState(() {
+   saveCard('player');
+   });
+   await Future.delayed(Duration(seconds: 2));
+   setState(() {
+     saveCard('player');
+   });
+  }
+
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    _controller = FlipCardController();
+    saveCard('first');
+    saveCard('dealer');
+    startGame();
   }
   
   @override
@@ -76,6 +121,7 @@ class _TableScreenState extends State<TableScreen> {
 
 
 
+            //Dealer
             Container(
               alignment: Alignment.centerLeft,
               margin: EdgeInsets.only(left: 20, right: 20, bottom: 10),
@@ -87,33 +133,74 @@ class _TableScreenState extends State<TableScreen> {
                   border: Border.all(color: Colors.blueGrey),
                   borderRadius: BorderRadius.circular(15)
               ),
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: dealer.map((card) {
-                  return FlipCard(
-                    front: Image.asset("assets/card.png"),
+              child: Row(
+                children: [
+
+                  FlipCard(
+                    controller: _controller,
+                    //flipOnTouch: false,
                     back: Container(
-                      width: 90,
-                      height: 150,
-                      child: CardGame(
-                        cardNumber: card.value,
-                        color: card.color,
-                        type: card.type,
-                        index: 0,
-                        size: "mini",
-                      ),
+                          width: 90,
+                          height: 150,
+                          child: CardGame(
+                              cardNumber: firstDealer[0].value,
+                              color: firstDealer[0].color,
+                              type: firstDealer[0].type,
+                              index: 0,
+                              size: "mini"),
                     ),
-                  );
-                }).toList()
+                  front: Image.asset("assets/card.png"),
+                ),
+
+
+
+
+                  Container(
+                    width: MediaQuery.of(context).size.width - 40 - 115,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children:
+                      dealer.map((card) {
+                        return Stack(
+                          children: [
+
+                            FlipCard(
+                              flipOnTouch: false,
+                              front: Container(
+                                width: 90,
+                                height: 150,
+                                child: CardGame(
+                                  cardNumber: card.value,
+                                  color: card.color,
+                                  type: card.type,
+                                  index: 0,
+                                  size: "mini",
+                                ),
+                              ),
+                              back: Image.asset("assets/card.png"),
+                            ),
+                            Container(
+                              color: Colors.transparent,
+                              width: 90,
+                              height: 140,),
+                          ],
+                        );
+                      }).toList()
+                    ),
+                  ),
+                ],
               )
             ),
 
+
+
+            //Player Card
             Expanded(
               child: SingleChildScrollView(
                 physics: BouncingScrollPhysics(),
                 scrollDirection: Axis.horizontal,
                 child: Container(
-                  width: widthCards,
+                  width: widthCards + 30,
                   height: 300,
                   child: playerCards.isNotEmpty ? Stack(
                     children: [
@@ -169,12 +256,16 @@ class _TableScreenState extends State<TableScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: (){
           saveCard('dealer');
-          setState(() {
 
-          });
+          //_controller.toggleCard();
+
+          setState(() {});
         },
       ),
 
     );
   }
+
+
+
 }

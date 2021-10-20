@@ -56,7 +56,7 @@ class CardGame extends StatelessWidget {
                   width: size == "normal" ? 35 : 17,
                   child: Column(
                     children: [
-                      Text(cardNumber, style: TextStyle(fontSize: size == "normal" ? 30 : 20, fontWeight: FontWeight.bold, color: color),),
+                      Text(cardNumber, style: TextStyle(fontSize: size == "normal" ? 30 : 13, fontWeight: FontWeight.bold, color: color),),
                       Image.asset(
                         type == "C" ? copa :
                         type == "O" ? ouro :
@@ -92,7 +92,7 @@ class CardGame extends StatelessWidget {
                         type == "O" ? ouro :
                         type == "P" ? paus : espada,
                         width: size == "normal" ? 30 : 15,),
-                      Text(cardNumber, style: TextStyle(fontSize: size == "normal" ? 30 : 20, fontWeight: FontWeight.bold, color: color),),
+                      Text(cardNumber, style: TextStyle(fontSize: size == "normal" ? 30 : 13, fontWeight: FontWeight.bold, color: color),),
                     ],
                   ),
                 ),
