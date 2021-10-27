@@ -1,5 +1,7 @@
 import 'dart:math';
+import 'package:animated_card/animated_card.dart';
 import 'package:black_jack/cardModel.dart';
+import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +18,9 @@ class _TableScreenState extends State<TableScreen> {
 
   List<CardModel> playerCards = [];
   List<CardModel> dealer = [];
-  List<CardModel> firstDealer = [];
+  List<CardModel> firstDealerCard = [];
+  bool isStart = false;
+  bool isOneOrEleven = true;
 
   List cardValues = ["A","2","3","4","5","6","7","8","9","10","J","Q","K",];
   List naipes = ["C", "O", "P", "S"];
@@ -51,7 +55,7 @@ class _TableScreenState extends State<TableScreen> {
     if(player == "player"){
       if( !playerCards.contains(card) &&
           !dealer.contains(card) &&
-          !firstDealer.contains(card)
+          !firstDealerCard.contains(card)
       ) {
         playerCards.add(card);
       }else{
@@ -60,11 +64,10 @@ class _TableScreenState extends State<TableScreen> {
       }
     }
 
-
     if(player == "dealer") {
       if (!playerCards.contains(card) &&
           !dealer.contains(card) &&
-          !firstDealer.contains(card)
+          !firstDealerCard.contains(card)
       ) {
         dealer.add(card);
       } else {
@@ -73,9 +76,8 @@ class _TableScreenState extends State<TableScreen> {
       }
     }
 
-
     if(player == "first"){
-      firstDealer.add(card);
+      firstDealerCard.add(card);
     }else{
       saveCard("first");
     }
@@ -84,7 +86,14 @@ class _TableScreenState extends State<TableScreen> {
 
 
   startGame()async{
-   await Future.delayed(Duration(seconds: 5));
+    saveCard('first');
+
+    await Future.delayed(Duration(seconds: 2));
+    setState(() {
+      saveCard('dealer');
+    });
+
+   await Future.delayed(Duration(seconds: 2));
    setState(() {
    saveCard('player');
    });
@@ -95,14 +104,35 @@ class _TableScreenState extends State<TableScreen> {
   }
 
 
+  sumCardValues({
+    required List<CardModel> cards,
+    bool dealer = false
+  }){
+    int value = !dealer ? 0 : int.parse(firstDealerCard[0].value);
+    for(int i = 0; i < cards.length; i++){
+      value = value + convertCardValue(cards[i].value);
+    }
+    print(value);
+  }
+
+  int convertCardValue(String value){
+    if(int.tryParse(value) is int){
+      return int.parse(value);
+    }else{
+      switch(value){
+        case "A": {return isOneOrEleven ? 1 : 11;}
+        default: { return 10; }
+      }
+    }
+  }
+
+
 
   @override
   void initState() {
     // TODO: implement initState
     _controller = FlipCardController();
-    saveCard('first');
-    saveCard('dealer');
-    startGame();
+
   }
   
   @override
@@ -136,23 +166,28 @@ class _TableScreenState extends State<TableScreen> {
               child: Row(
                 children: [
 
-                  FlipCard(
-                    controller: _controller,
-                    //flipOnTouch: false,
-                    back: Container(
-                          width: 90,
-                          height: 150,
-                          child: CardGame(
-                              cardNumber: firstDealer[0].value,
-                              color: firstDealer[0].color,
-                              type: firstDealer[0].type,
-                              index: 0,
-                              size: "mini"),
-                    ),
-                  front: Image.asset("assets/card.png"),
+                  if(isStart)
+                  AnimatedCard(
+                    direction: AnimatedCardDirection.left,
+                    initDelay: Duration(milliseconds: 0),
+                    duration: Duration(milliseconds: 1000),
+                    curve: Curves.bounceOut,
+                    child: FlipCard(
+                      controller: _controller,
+                      //flipOnTouch: false,
+                      back: Container(
+                            width: 90,
+                            height: 150,
+                            child: CardGame(
+                                cardNumber: firstDealerCard[0].value,
+                                color: firstDealerCard[0].color,
+                                type: firstDealerCard[0].type,
+                                index: 0,
+                                size: "mini"),
+                      ),
+                    front: Image.asset("assets/card.png"),
                 ),
-
-
+                  ),
 
 
                   Container(
@@ -195,6 +230,34 @@ class _TableScreenState extends State<TableScreen> {
 
 
             //Player Card
+            if(!isStart)
+            Expanded(
+              child: Center(
+                child: GestureDetector(
+                  onTap: (){
+                    setState(() {
+                      isStart = true;
+                    });
+                    startGame();
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    width: 230,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white24, width: 5),
+                      borderRadius: BorderRadius.circular(50)
+                    ),
+                    child: Text("START", style: TextStyle(
+                      color: Colors.white24,
+                      fontSize: 36
+                    ),),
+                  ),
+                ),
+              ),
+            ),
+
+            if(isStart)
             Expanded(
               child: SingleChildScrollView(
                 physics: BouncingScrollPhysics(),
@@ -227,24 +290,62 @@ class _TableScreenState extends State<TableScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                GestureDetector(
-                  child: Container(
-                    alignment: Alignment.center,
-                    padding: EdgeInsets.all(10),
-                    height: 190,
-                    width: 130,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.blueGrey),
-                      borderRadius: BorderRadius.circular(15)
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(10),
+                      height: 190,
+                      width: 130,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.blueGrey),
+                        borderRadius: BorderRadius.circular(15)
+                      ),
+                      child: GestureDetector(
+                          child: Image.asset("assets/card.png"),
+                        onTap: (){
+                          setState(() {
+                            widthCards = widthCards + 50;
+                          });
+                          saveCard("player");
+                        },
+                      ),
                     ),
-                    child: Image.asset("assets/card.png"),
-                  ),
-                  onTap: (){
-                      setState(() {
-                        widthCards = widthCards + 50;
-                      });
-                     saveCard("player");
-                  },
+
+
+                    playerCards.length < 2 ? SizedBox():
+                    GestureDetector(
+                      onTap: (){
+                        print("Stop");
+                      },
+                      child: AnimatedCard(
+                        child: Container(
+                          height: 50,
+                          width: 50,
+                          margin: EdgeInsets.only(bottom: 5, right: 5),
+                          padding: EdgeInsets.only(right: 5,),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withOpacity(.8),
+                            shape: BoxShape.circle
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.pan_tool,
+                                size: 25,
+                                color: Colors.black.withOpacity(.7),
+                              ),
+                              Text("  Stop", style: TextStyle(fontSize: 10),)
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  ],
                 ),
               ],
             )
@@ -253,15 +354,63 @@ class _TableScreenState extends State<TableScreen> {
 
       ),
 
-      floatingActionButton: FloatingActionButton(
-        onPressed: (){
-          saveCard('dealer');
 
-          //_controller.toggleCard();
+        floatingActionButton: FabCircularMenu(
+            fabColor: Colors.black,
+            ringColor: Colors.black54,
+            fabCloseIcon: Icon(Icons.arrow_forward_ios, color: Colors.amber,),
+            fabOpenIcon: Icon(Icons.star, color: Colors.amber,),
+            ringWidth: 200,
 
-          setState(() {});
-        },
-      ),
+            children: <Widget>[
+              IconButton(
+                  highlightColor: Colors.black,
+                  splashColor: Colors.black,
+                  splashRadius: 30,
+
+                  icon: Icon(
+                    Icons.home,
+                    size: 35,
+                    color: Colors.orange,
+                  ),
+                  onPressed: () {
+                print('Home');
+              }),
+              IconButton(
+                  icon: Icon(
+                    Icons.monetization_on_outlined,
+                    size: 40,
+                    color: Colors.orange,
+                  ),
+                  onPressed: () {
+                print('Favorite');
+              }),
+              IconButton(
+                  icon: Icon(
+                    Icons.favorite,
+                    size: 35,
+                    color: Colors.orange,
+                  ),
+                  onPressed: () {
+                    print('Favorite');
+                  }),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                      icon: Icon(
+                        Icons.stop_circle_outlined,
+                        size: 35,
+                        color: Colors.orange,
+                      ),
+                      onPressed: () {
+                        print('Favorite');
+                      }),
+                  Text(" Stop", style: TextStyle(color: Colors.orange, fontSize: 10),)
+                ],
+              )
+            ]
+        )
 
     );
   }
