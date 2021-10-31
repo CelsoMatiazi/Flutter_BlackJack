@@ -6,6 +6,7 @@ import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
 import 'card.dart';
+import 'dialogMessage.dart';
 
 class TableScreen extends StatefulWidget {
   const TableScreen({Key? key}) : super(key: key);
@@ -21,6 +22,7 @@ class _TableScreenState extends State<TableScreen> {
   List<CardModel> firstDealerCard = [];
   bool isStart = false;
   bool isOneOrEleven = true;
+  bool isPlayerPlay = true;
 
   List cardValues = ["A","2","3","4","5","6","7","8","9","10","J","Q","K",];
   List naipes = ["C", "O", "P", "S"];
@@ -104,7 +106,7 @@ class _TableScreenState extends State<TableScreen> {
   }
 
 
-  sumCardValues({
+  int sumCardValues({
     required List<CardModel> cards,
     bool dealer = false
   }){
@@ -112,7 +114,7 @@ class _TableScreenState extends State<TableScreen> {
     for(int i = 0; i < cards.length; i++){
       value = value + convertCardValue(cards[i].value);
     }
-    print(value);
+    return value;
   }
 
   int convertCardValue(String value){
@@ -126,6 +128,24 @@ class _TableScreenState extends State<TableScreen> {
     }
   }
 
+
+  playerIsPlay(){
+
+    if(isPlayerPlay){
+      setState(() {
+        widthCards = widthCards + 50;
+      });
+      saveCard("player");
+
+      if(sumCardValues(cards: playerCards) > 21){
+        gameMessage(context: context, message: "You Lose!!!");
+      }
+
+      print(sumCardValues(cards: playerCards));
+
+    }
+
+  }
 
 
   @override
@@ -306,19 +326,28 @@ class _TableScreenState extends State<TableScreen> {
                       child: GestureDetector(
                           child: Image.asset("assets/card.png"),
                         onTap: (){
-                          setState(() {
-                            widthCards = widthCards + 50;
-                          });
-                          saveCard("player");
+
+                         if(isPlayerPlay){
+                           playerIsPlay();
+                         }
+
                         },
                       ),
                     ),
 
 
-                    playerCards.length < 2 ? SizedBox():
+                    (playerCards.length < 2  || !isPlayerPlay) ? SizedBox():
                     GestureDetector(
                       onTap: (){
                         print("Stop");
+
+                        setState(() {
+                          isPlayerPlay = false;
+                        });
+
+                        Future.delayed(Duration(seconds: 1)).then((value){
+                          gameMessage(context: context, message: "Dealer Play!");
+                        });
                       },
                       child: AnimatedCard(
                         child: Container(
@@ -374,7 +403,9 @@ class _TableScreenState extends State<TableScreen> {
                     color: Colors.orange,
                   ),
                   onPressed: () {
-                print('Home');
+                    gameMessage(context: context,
+                        message: "You Lose!!!"
+                );
               }),
               IconButton(
                   icon: Icon(
