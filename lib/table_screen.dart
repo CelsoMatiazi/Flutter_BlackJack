@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:animated_card/animated_card.dart';
 import 'package:black_jack/cardModel.dart';
+import 'package:black_jack/score_card.dart';
 import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
@@ -22,15 +23,20 @@ class _TableScreenState extends State<TableScreen> {
   List<CardModel> firstDealerCard = [];
   bool isStart = false;
   bool isOneOrEleven = true;
-  bool isPlayerPlay = true;
+  bool isPlayerPlay = false;
 
   List cardValues = ["A","2","3","4","5","6","7","8","9","10","J","Q","K",];
   List naipes = ["C", "O", "P", "S"];
   int leftCards = -1;
+  int leftCardsDealer = -1;
+
+  int playerScore = 0;
+  int dealerScore = 0;
 
   late FlipCardController _controller;
 
   double widthCards = 200.0;
+  double widthCardsDealer = 200.0;
 
   Color setCardColor(String type){
     if(type == "C" || type == "O"){
@@ -39,8 +45,6 @@ class _TableScreenState extends State<TableScreen> {
       return Colors.black;
     }
   }
-
-
 
 
   saveCard(String player){
@@ -80,8 +84,6 @@ class _TableScreenState extends State<TableScreen> {
 
     if(player == "first"){
       firstDealerCard.add(card);
-    }else{
-      saveCard("first");
     }
 
   }
@@ -102,6 +104,7 @@ class _TableScreenState extends State<TableScreen> {
    await Future.delayed(Duration(seconds: 2));
    setState(() {
      saveCard('player');
+     playerScore = sumCardValues(cards: playerCards);
    });
   }
 
@@ -129,6 +132,7 @@ class _TableScreenState extends State<TableScreen> {
   }
 
 
+
   playerIsPlay(){
 
     if(isPlayerPlay){
@@ -141,8 +145,40 @@ class _TableScreenState extends State<TableScreen> {
         gameMessage(context: context, message: "You Lose!!!");
       }
 
-      print(sumCardValues(cards: playerCards));
+      Future.delayed(Duration(milliseconds: 1300), (){
+        setState(() {
+          playerScore = sumCardValues(cards: playerCards);
+        });
+      });
+    }
+  }
 
+
+  dealerIsPlaying(){
+
+    Future.delayed(Duration(seconds: 1)).then((value){
+      gameMessage(context: context, message: "Dealer Play!");
+    });
+
+    _controller.toggleCard();
+    setState(() {
+      dealerScore = sumCardValues(cards: dealer) + sumCardValues(cards: firstDealerCard) ;
+    });
+
+    dealerStopPlay(dealerScore);
+
+  }
+
+  dealerStopPlay(int value){
+
+    if(value < playerScore){
+      Future.delayed(Duration(seconds: 1), (){
+        setState(() {
+          saveCard("dealer");
+          dealerScore = sumCardValues(cards: dealer) + sumCardValues(cards: firstDealerCard) ;
+        });
+        dealerStopPlay(dealerScore);
+      });
     }
 
   }
@@ -152,12 +188,12 @@ class _TableScreenState extends State<TableScreen> {
   void initState() {
     // TODO: implement initState
     _controller = FlipCardController();
-
   }
   
   @override
   Widget build(BuildContext context) {
     leftCards = -1;
+    leftCardsDealer = -1;
     return Scaffold(
       backgroundColor: Colors.green[900],
       body: Container(
@@ -168,8 +204,6 @@ class _TableScreenState extends State<TableScreen> {
           children: [
 
             SizedBox(height: 30,),
-
-
 
             //Dealer
             Container(
@@ -194,7 +228,7 @@ class _TableScreenState extends State<TableScreen> {
                     curve: Curves.bounceOut,
                     child: FlipCard(
                       controller: _controller,
-                      //flipOnTouch: false,
+                      flipOnTouch: false,
                       back: Container(
                             width: 90,
                             height: 150,
@@ -210,39 +244,36 @@ class _TableScreenState extends State<TableScreen> {
                   ),
 
 
-                  Container(
-                    width: MediaQuery.of(context).size.width - 40 - 115,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children:
-                      dealer.map((card) {
-                        return Stack(
-                          children: [
 
-                            FlipCard(
-                              flipOnTouch: false,
-                              front: Container(
-                                width: 90,
-                                height: 150,
-                                child: CardGame(
+                  Expanded(
+                    child: SingleChildScrollView(
+                      //physics: BouncingScrollPhysics(),
+                      scrollDirection: Axis.horizontal,
+                      child: Container(
+                        width: widthCardsDealer ,
+                        //height: 300,
+                        child: dealer.isNotEmpty ? Stack(
+                          children: [
+                            Stack(
+                              children: dealer.map((card) {
+                                leftCardsDealer++;
+                                return CardGame(
                                   cardNumber: card.value,
                                   color: card.color,
                                   type: card.type,
-                                  index: 0,
+                                  index: leftCardsDealer,
                                   size: "mini",
-                                ),
-                              ),
-                              back: Image.asset("assets/card.png"),
+                                );
+                              }).toList(),
                             ),
-                            Container(
-                              color: Colors.transparent,
-                              width: 90,
-                              height: 140,),
+
+                            Container(color: Colors.transparent,)
                           ],
-                        );
-                      }).toList()
+                        ): SizedBox(),
+                      ),
                     ),
                   ),
+
                 ],
               )
             ),
@@ -257,6 +288,7 @@ class _TableScreenState extends State<TableScreen> {
                   onTap: (){
                     setState(() {
                       isStart = true;
+                      isPlayerPlay = true;
                     });
                     startGame();
                   },
@@ -308,8 +340,25 @@ class _TableScreenState extends State<TableScreen> {
             ),
 
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
+
+                Container(
+                  height: 190,
+                  width: (MediaQuery.of(context).size.width - 130) /2,
+
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+
+                      ScoreCard(title: "Guest", score: playerScore,),
+                      ScoreCard(title: "Dealer", score: dealerScore,),
+                    ],
+                  ),
+                ),
+
+
+
                 Stack(
                   alignment: Alignment.bottomRight,
                   children: [
@@ -339,15 +388,14 @@ class _TableScreenState extends State<TableScreen> {
                     (playerCards.length < 2  || !isPlayerPlay) ? SizedBox():
                     GestureDetector(
                       onTap: (){
-                        print("Stop");
+
+                        dealerIsPlaying();
 
                         setState(() {
                           isPlayerPlay = false;
                         });
 
-                        Future.delayed(Duration(seconds: 1)).then((value){
-                          gameMessage(context: context, message: "Dealer Play!");
-                        });
+
                       },
                       child: AnimatedCard(
                         child: Container(
@@ -415,6 +463,7 @@ class _TableScreenState extends State<TableScreen> {
                   ),
                   onPressed: () {
                 print('Favorite');
+                dealerIsPlaying();
               }),
               IconButton(
                   icon: Icon(

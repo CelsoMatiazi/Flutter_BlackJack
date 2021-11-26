@@ -36,7 +36,7 @@ class CardGame extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          SizedBox(width: index * 50.0,),
+          SizedBox(width: size == "normal" ? (index * 50.0) : (index * 25),),
           Container(
             padding: EdgeInsets.all(4),
             height: size == "normal" ? 250 : 150,
