@@ -1,3 +1,4 @@
+import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:flutter/material.dart';
 
 class ScoreCard extends StatelessWidget {
@@ -25,7 +26,14 @@ class ScoreCard extends StatelessWidget {
         children: [
           Text(title, style: TextStyle(color: Colors.white38),),
           Divider(height: 5, color: Colors.white38,),
-          Text(score.toString(), style: TextStyle(color: Colors.white38, fontSize: 35),)
+
+          AnimatedFlipCounter(
+            value: score,
+            fractionDigits: 0,
+            duration: const Duration(milliseconds: 600),
+            textStyle: TextStyle(fontSize: 35, color: Colors.white),
+          ),
+          //Text(score.toString(), style: TextStyle(color: Colors.white38, fontSize: 35),)
         ],
       ),
 

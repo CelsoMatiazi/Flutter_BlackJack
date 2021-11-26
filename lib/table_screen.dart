@@ -65,7 +65,6 @@ class _TableScreenState extends State<TableScreen> {
       ) {
         playerCards.add(card);
       }else{
-        print("else Player");
         saveCard("player");
       }
     }
@@ -77,7 +76,6 @@ class _TableScreenState extends State<TableScreen> {
       ) {
         dealer.add(card);
       } else {
-        print("else dealer");
         saveCard("dealer");
       }
     }
@@ -142,7 +140,7 @@ class _TableScreenState extends State<TableScreen> {
       saveCard("player");
 
       if(sumCardValues(cards: playerCards) > 21){
-        gameMessage(context: context, message: "You Lose!!!");
+        showMessage("You Lose!!");
       }
 
       Future.delayed(Duration(milliseconds: 1300), (){
@@ -156,31 +154,65 @@ class _TableScreenState extends State<TableScreen> {
 
   dealerIsPlaying(){
 
-    Future.delayed(Duration(seconds: 1)).then((value){
-      gameMessage(context: context, message: "Dealer Play!");
-    });
+    gameMessage(context: context, message: "Dealer Play!");
+    Future.delayed(Duration(seconds: 3)).then((value){
+      Navigator.pop(context);
 
-    _controller.toggleCard();
-    setState(() {
-      dealerScore = sumCardValues(cards: dealer) + sumCardValues(cards: firstDealerCard) ;
-    });
+      _controller.toggleCard();
+      setState(() {
+        dealerScore = sumCardValues(cards: dealer) + sumCardValues(cards: firstDealerCard) ;
+      });
 
-    dealerStopPlay(dealerScore);
+      dealerStopPlay(dealerScore);
+    });
 
   }
 
   dealerStopPlay(int value){
 
-    if(value < playerScore){
-      Future.delayed(Duration(seconds: 1), (){
+    if(value <= playerScore ){
+      Future.delayed(Duration(seconds: 3), (){
         setState(() {
           saveCard("dealer");
           dealerScore = sumCardValues(cards: dealer) + sumCardValues(cards: firstDealerCard) ;
         });
         dealerStopPlay(dealerScore);
       });
+    }else{
+      showMessage("End Game");
     }
 
+  }
+
+
+  showMessage(String msg){
+
+    Future.delayed(Duration(seconds: 1),(){
+      gameMessage(context: context, message: msg);
+    });
+
+    Future.delayed(Duration(seconds: 4),(){
+      Navigator.pop(context);
+    });
+
+  }
+
+
+
+  resetGame(){
+    playerCards = [];
+    dealer = [];
+    firstDealerCard = [];
+    isStart = false;
+    isOneOrEleven = true;
+    isPlayerPlay = false;
+
+    leftCards = -1;
+    leftCardsDealer = -1;
+
+    playerScore = 0;
+    dealerScore = 0;
+    setState(() {});
   }
 
 
@@ -250,7 +282,7 @@ class _TableScreenState extends State<TableScreen> {
                       //physics: BouncingScrollPhysics(),
                       scrollDirection: Axis.horizontal,
                       child: Container(
-                        width: widthCardsDealer ,
+                        width: widthCardsDealer + 15 ,
                         //height: 300,
                         child: dealer.isNotEmpty ? Stack(
                           children: [
@@ -467,26 +499,39 @@ class _TableScreenState extends State<TableScreen> {
               }),
               IconButton(
                   icon: Icon(
-                    Icons.favorite,
+                    Icons.hdr_auto_outlined,
                     size: 35,
-                    color: Colors.orange,
+                    color: isOneOrEleven ? Colors.grey : Colors.orange,
                   ),
                   onPressed: () {
-                    print('Favorite');
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: Colors.amber[600],
+                            content: Text("A carta A vale ${isOneOrEleven ? "11" : "1"}",
+                              style: TextStyle(
+                                  color: Colors.black
+                              ),)
+                        ));
+                   setState(() {
+                     isOneOrEleven = !isOneOrEleven;
+                     playerScore = sumCardValues(cards: playerCards);
+                   });
+
                   }),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
                       icon: Icon(
-                        Icons.stop_circle_outlined,
+                        Icons.refresh,
                         size: 35,
                         color: Colors.orange,
                       ),
                       onPressed: () {
-                        print('Favorite');
+                       resetGame();
                       }),
-                  Text(" Stop", style: TextStyle(color: Colors.orange, fontSize: 10),)
+                  Text(" Reset", style: TextStyle(color: Colors.orange, fontSize: 10),)
                 ],
               )
             ]

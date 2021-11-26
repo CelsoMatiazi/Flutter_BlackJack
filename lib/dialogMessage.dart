@@ -1,11 +1,11 @@
 
 import 'package:flutter/material.dart';
 
-void gameMessage({
+Future<void> gameMessage({
   required BuildContext context,
   required String message
 }){
-  showGeneralDialog(
+  return showGeneralDialog(
     barrierColor: Colors.black38,
     transitionBuilder: (context, a1, a2, widget){
       return MediaQuery(

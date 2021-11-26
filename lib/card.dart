@@ -32,7 +32,7 @@ class CardGame extends StatelessWidget {
       direction: AnimatedCardDirection.left,
       initDelay: Duration(milliseconds: 0),
       duration: Duration(milliseconds: 1000),
-      curve: Curves.bounceOut,
+      curve: Curves.fastOutSlowIn,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -68,7 +68,7 @@ class CardGame extends StatelessWidget {
                 Center(
                   child: Container(
                     width: size == "normal" ? 100 : 45,
-                    height: size == "normal" ? 150 : 70,
+                    height: size == "normal" ? 150 : 67,
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: Colors.grey)
@@ -78,7 +78,7 @@ class CardGame extends StatelessWidget {
                       type == "C" ? copa :
                       type == "O" ? ouro :
                       type == "P" ? paus : espada,
-                      width: 35,)
+                      width: 25,)
                   ),
                 ),
                 Container(
