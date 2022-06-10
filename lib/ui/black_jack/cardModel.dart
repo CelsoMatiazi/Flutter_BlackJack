@@ -16,7 +16,6 @@ class CardModel{
 
   @override
   bool operator == (Object other) {
-    // TODO: implement ==
     return (other is CardModel)
         && other.value == value
         && other.type == type
