@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:animated_card/animated_card.dart';
-import 'package:black_jack/cardModel.dart';
-import 'package:black_jack/score_card.dart';
+import 'package:black_jack/ui/black_jack/cardModel.dart';
+import 'package:black_jack/ui/black_jack/score_card.dart';
 import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
@@ -26,7 +26,7 @@ class _TableScreenState extends State<TableScreen> {
   bool isPlayerPlay = false;
 
   List cardValues = ["A","2","3","4","5","6","7","8","9","10","J","Q","K",];
-  List naipes = ["C", "O", "P", "S"];
+  List cardTypes = ["C", "O", "P", "S"];
   int leftCards = -1;
   int leftCardsDealer = -1;
 
@@ -39,11 +39,8 @@ class _TableScreenState extends State<TableScreen> {
   double widthCardsDealer = 200.0;
 
   Color setCardColor(String type){
-    if(type == "C" || type == "O"){
-      return Colors.red;
-    }else{
-      return Colors.black;
-    }
+    if(type == "C" || type == "O") return Colors.red;
+    return Colors.black;
   }
 
 
@@ -54,8 +51,8 @@ class _TableScreenState extends State<TableScreen> {
 
     CardModel card = CardModel(
         value: cardValues[cardValueIndex],
-        type: naipes[naipeIndex],
-        color: setCardColor(naipes[naipeIndex]),
+        type: cardTypes[naipeIndex],
+        color: setCardColor(cardTypes[naipeIndex]),
     );
 
     if(player == "player"){
@@ -87,7 +84,7 @@ class _TableScreenState extends State<TableScreen> {
   }
 
 
-  startGame()async{
+  startGame() async {
     saveCard('first');
 
     await Future.delayed(Duration(seconds: 2));
@@ -97,8 +94,9 @@ class _TableScreenState extends State<TableScreen> {
 
    await Future.delayed(Duration(seconds: 2));
    setState(() {
-   saveCard('player');
+     saveCard('player');
    });
+
    await Future.delayed(Duration(seconds: 2));
    setState(() {
      saveCard('player');
@@ -131,7 +129,7 @@ class _TableScreenState extends State<TableScreen> {
 
 
 
-  playerIsPlay(){
+  playerIsPlaying(){
 
     if(isPlayerPlay){
       setState(() {
@@ -140,7 +138,10 @@ class _TableScreenState extends State<TableScreen> {
       saveCard("player");
 
       if(sumCardValues(cards: playerCards) > 21){
-        showMessage("You Lose!!");
+        showMessage("Game Over");
+        setState(() {
+          isPlayerPlay = false;
+        });
       }
 
       Future.delayed(Duration(milliseconds: 1300), (){
@@ -153,8 +154,7 @@ class _TableScreenState extends State<TableScreen> {
 
 
   dealerIsPlaying(){
-
-    gameMessage(context: context, message: "Dealer Play!");
+    gameMessage(context: context, message: "Dealer");
     Future.delayed(Duration(seconds: 3)).then((value){
       Navigator.pop(context);
 
@@ -179,14 +179,17 @@ class _TableScreenState extends State<TableScreen> {
         dealerStopPlay(dealerScore);
       });
     }else{
-      showMessage("End Game");
+      if(value > 21){
+        showMessage("You Win!!");
+      }else{
+        showMessage("Game Over");
+      }
     }
 
   }
 
 
   showMessage(String msg){
-
     Future.delayed(Duration(seconds: 1),(){
       gameMessage(context: context, message: msg);
     });
@@ -206,22 +209,19 @@ class _TableScreenState extends State<TableScreen> {
     isStart = false;
     isOneOrEleven = true;
     isPlayerPlay = false;
-
     leftCards = -1;
     leftCardsDealer = -1;
-
     playerScore = 0;
     dealerScore = 0;
     setState(() {});
   }
 
-
   @override
   void initState() {
-    // TODO: implement initState
     _controller = FlipCardController();
+    super.initState();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     leftCards = -1;
@@ -409,7 +409,7 @@ class _TableScreenState extends State<TableScreen> {
                         onTap: (){
 
                          if(isPlayerPlay){
-                           playerIsPlay();
+                           playerIsPlaying();
                          }
 
                         },
@@ -420,14 +420,10 @@ class _TableScreenState extends State<TableScreen> {
                     (playerCards.length < 2  || !isPlayerPlay) ? SizedBox():
                     GestureDetector(
                       onTap: (){
-
                         dealerIsPlaying();
-
                         setState(() {
                           isPlayerPlay = false;
                         });
-
-
                       },
                       child: AnimatedCard(
                         child: Container(
@@ -464,6 +460,7 @@ class _TableScreenState extends State<TableScreen> {
       ),
 
 
+
         floatingActionButton: FabCircularMenu(
             fabColor: Colors.black,
             ringColor: Colors.black54,
@@ -483,9 +480,7 @@ class _TableScreenState extends State<TableScreen> {
                     color: Colors.orange,
                   ),
                   onPressed: () {
-                    gameMessage(context: context,
-                        message: "You Lose!!!"
-                );
+                    Navigator.pop(context);
               }),
               IconButton(
                   icon: Icon(
@@ -493,10 +488,7 @@ class _TableScreenState extends State<TableScreen> {
                     size: 40,
                     color: Colors.orange,
                   ),
-                  onPressed: () {
-                print('Favorite');
-                dealerIsPlaying();
-              }),
+                  onPressed: () {}),
               IconButton(
                   icon: Icon(
                     Icons.hdr_auto_outlined,
@@ -504,7 +496,6 @@ class _TableScreenState extends State<TableScreen> {
                     color: isOneOrEleven ? Colors.grey : Colors.orange,
                   ),
                   onPressed: () {
-
                     ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           backgroundColor: Colors.amber[600],

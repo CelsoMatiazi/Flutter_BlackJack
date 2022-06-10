@@ -1,8 +1,15 @@
-import 'package:black_jack/table_screen.dart';
+
+import 'package:black_jack/ui/home/home_controller.dart';
+import 'package:black_jack/ui/home/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(ChangeNotifierProvider(
+      create: (_) => HomeController(),
+      child: MyApp()
+    )
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -10,13 +17,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Black Jack',
       theme: ThemeData(
-
         primarySwatch: Colors.blue,
       ),
       debugShowCheckedModeBanner: false,
-      home: TableScreen(),
+      home: HomeScreen(),
     );
   }
 }
