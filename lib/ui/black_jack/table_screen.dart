@@ -1,4 +1,3 @@
-
 import 'package:animated_card/animated_card.dart';
 import 'package:black_jack/ui/black_jack/black_jack_controller.dart';
 import 'package:black_jack/ui/black_jack/score_card.dart';
@@ -52,6 +51,12 @@ class _TableScreenState extends State<TableScreen> {
       backgroundColor: Colors.green[900],
       body: Container(
         padding: EdgeInsets.only(bottom: 20),
+        decoration: BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage("assets/table_bg.jpeg"),
+                fit: BoxFit.cover
+            )
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.start,
