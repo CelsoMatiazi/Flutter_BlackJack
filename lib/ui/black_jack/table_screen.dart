@@ -1,11 +1,12 @@
-import 'dart:math';
+
 import 'package:animated_card/animated_card.dart';
-import 'package:black_jack/ui/black_jack/cardModel.dart';
+import 'package:black_jack/ui/black_jack/black_jack_controller.dart';
 import 'package:black_jack/ui/black_jack/score_card.dart';
 import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'card.dart';
 import 'dialogMessage.dart';
 
@@ -18,203 +19,22 @@ class TableScreen extends StatefulWidget {
 
 class _TableScreenState extends State<TableScreen> {
 
-  List<CardModel> playerCards = [];
-  List<CardModel> dealer = [];
-  List<CardModel> firstDealerCard = [];
-  bool isStart = false;
-  bool isOneOrEleven = true;
-  bool isPlayerPlay = false;
-
-  List cardValues = ["A","2","3","4","5","6","7","8","9","10","J","Q","K",];
-  List cardTypes = ["C", "O", "P", "S"];
-  int leftCards = -1;
-  int leftCardsDealer = -1;
-
-  int playerScore = 0;
-  int dealerScore = 0;
-
   late FlipCardController _controller;
 
-  double widthCards = 200.0;
-  double widthCardsDealer = 200.0;
-
-  Color setCardColor(String type){
-    if(type == "C" || type == "O") return Colors.red;
-    return Colors.black;
-  }
-
-
-  saveCard(String player){
-    var random = Random();
-    var cardValueIndex = random.nextInt(13);
-    var naipeIndex = random.nextInt(4);
-
-    CardModel card = CardModel(
-        value: cardValues[cardValueIndex],
-        type: cardTypes[naipeIndex],
-        color: setCardColor(cardTypes[naipeIndex]),
-    );
-
-    if(player == "player"){
-      if( !playerCards.contains(card) &&
-          !dealer.contains(card) &&
-          !firstDealerCard.contains(card)
-      ) {
-        playerCards.add(card);
-      }else{
-        saveCard("player");
-      }
-    }
-
-    if(player == "dealer") {
-      if (!playerCards.contains(card) &&
-          !dealer.contains(card) &&
-          !firstDealerCard.contains(card)
-      ) {
-        dealer.add(card);
-      } else {
-        saveCard("dealer");
-      }
-    }
-
-    if(player == "first"){
-      firstDealerCard.add(card);
-    }
-
-  }
-
-
   startGame() async {
-    saveCard('first');
+    var bjController = Provider.of<BlackJackController>(context, listen: false);
+    bjController.saveCard('first');
 
     await Future.delayed(Duration(seconds: 2));
-    setState(() {
-      saveCard('dealer');
-    });
+    bjController.saveCard('dealer');
 
    await Future.delayed(Duration(seconds: 2));
-   setState(() {
-     saveCard('player');
-   });
+   bjController.saveCard('player');
 
    await Future.delayed(Duration(seconds: 2));
-   setState(() {
-     saveCard('player');
-     playerScore = sumCardValues(cards: playerCards);
-   });
+     bjController.saveCard('player');
   }
 
-
-  int sumCardValues({
-    required List<CardModel> cards,
-    bool dealer = false
-  }){
-    int value = !dealer ? 0 : int.parse(firstDealerCard[0].value);
-    for(int i = 0; i < cards.length; i++){
-      value = value + convertCardValue(cards[i].value);
-    }
-    return value;
-  }
-
-  int convertCardValue(String value){
-    if(int.tryParse(value) is int){
-      return int.parse(value);
-    }else{
-      switch(value){
-        case "A": {return isOneOrEleven ? 1 : 11;}
-        default: { return 10; }
-      }
-    }
-  }
-
-
-
-  playerIsPlaying(){
-
-    if(isPlayerPlay){
-      setState(() {
-        widthCards = widthCards + 50;
-      });
-      saveCard("player");
-
-      if(sumCardValues(cards: playerCards) > 21){
-        showMessage("Game Over");
-        setState(() {
-          isPlayerPlay = false;
-        });
-      }
-
-      Future.delayed(Duration(milliseconds: 1300), (){
-        setState(() {
-          playerScore = sumCardValues(cards: playerCards);
-        });
-      });
-    }
-  }
-
-
-  dealerIsPlaying(){
-    gameMessage(context: context, message: "Dealer");
-    Future.delayed(Duration(seconds: 3)).then((value){
-      Navigator.pop(context);
-
-      _controller.toggleCard();
-      setState(() {
-        dealerScore = sumCardValues(cards: dealer) + sumCardValues(cards: firstDealerCard) ;
-      });
-
-      dealerStopPlay(dealerScore);
-    });
-
-  }
-
-  dealerStopPlay(int value){
-
-    if(value <= playerScore ){
-      Future.delayed(Duration(seconds: 3), (){
-        setState(() {
-          saveCard("dealer");
-          dealerScore = sumCardValues(cards: dealer) + sumCardValues(cards: firstDealerCard) ;
-        });
-        dealerStopPlay(dealerScore);
-      });
-    }else{
-      if(value > 21){
-        showMessage("You Win!!");
-      }else{
-        showMessage("Game Over");
-      }
-    }
-
-  }
-
-
-  showMessage(String msg){
-    Future.delayed(Duration(seconds: 1),(){
-      gameMessage(context: context, message: msg);
-    });
-
-    Future.delayed(Duration(seconds: 4),(){
-      Navigator.pop(context);
-    });
-
-  }
-
-
-
-  resetGame(){
-    playerCards = [];
-    dealer = [];
-    firstDealerCard = [];
-    isStart = false;
-    isOneOrEleven = true;
-    isPlayerPlay = false;
-    leftCards = -1;
-    leftCardsDealer = -1;
-    playerScore = 0;
-    dealerScore = 0;
-    setState(() {});
-  }
 
   @override
   void initState() {
@@ -224,8 +44,10 @@ class _TableScreenState extends State<TableScreen> {
 
   @override
   Widget build(BuildContext context) {
-    leftCards = -1;
-    leftCardsDealer = -1;
+    var bjController = Provider.of<BlackJackController>(context);
+    bjController.getContext(context);
+    bjController.leftCards = -1;
+    bjController.leftCardsDealer = -1;
     return Scaffold(
       backgroundColor: Colors.green[900],
       body: Container(
@@ -252,7 +74,7 @@ class _TableScreenState extends State<TableScreen> {
               child: Row(
                 children: [
 
-                  if(isStart)
+                  if(bjController.isStart)
                   AnimatedCard(
                     direction: AnimatedCardDirection.left,
                     initDelay: Duration(milliseconds: 0),
@@ -265,9 +87,9 @@ class _TableScreenState extends State<TableScreen> {
                             width: 90,
                             height: 150,
                             child: CardGame(
-                                cardNumber: firstDealerCard[0].value,
-                                color: firstDealerCard[0].color,
-                                type: firstDealerCard[0].type,
+                                cardNumber: bjController.firstDealerCard[0].value,
+                                color: bjController.firstDealerCard[0].color,
+                                type: bjController.firstDealerCard[0].type,
                                 index: 0,
                                 size: "mini"),
                       ),
@@ -282,18 +104,18 @@ class _TableScreenState extends State<TableScreen> {
                       //physics: BouncingScrollPhysics(),
                       scrollDirection: Axis.horizontal,
                       child: Container(
-                        width: widthCardsDealer + 15 ,
+                        width: bjController.widthCardsDealer + 15 ,
                         //height: 300,
-                        child: dealer.isNotEmpty ? Stack(
+                        child: bjController.dealerCards.isNotEmpty ? Stack(
                           children: [
                             Stack(
-                              children: dealer.map((card) {
-                                leftCardsDealer++;
+                              children: bjController.dealerCards.map((card) {
+                                bjController.leftCardsDealer++;
                                 return CardGame(
                                   cardNumber: card.value,
                                   color: card.color,
                                   type: card.type,
-                                  index: leftCardsDealer,
+                                  index: bjController.leftCardsDealer,
                                   size: "mini",
                                 );
                               }).toList(),
@@ -305,7 +127,6 @@ class _TableScreenState extends State<TableScreen> {
                       ),
                     ),
                   ),
-
                 ],
               )
             ),
@@ -313,14 +134,14 @@ class _TableScreenState extends State<TableScreen> {
 
 
             //Player Card
-            if(!isStart)
+            if(!bjController.isStart)
             Expanded(
               child: Center(
                 child: GestureDetector(
                   onTap: (){
                     setState(() {
-                      isStart = true;
-                      isPlayerPlay = true;
+                      bjController.isStart = true;
+                      bjController.isPlayerPlay = true;
                     });
                     startGame();
                   },
@@ -341,24 +162,24 @@ class _TableScreenState extends State<TableScreen> {
               ),
             ),
 
-            if(isStart)
+            if(bjController.isStart)
             Expanded(
               child: SingleChildScrollView(
                 physics: BouncingScrollPhysics(),
                 scrollDirection: Axis.horizontal,
                 child: Container(
-                  width: widthCards + 30,
+                  width: bjController.widthCards + 30,
                   height: 300,
-                  child: playerCards.isNotEmpty ? Stack(
+                  child: bjController.playerCards.isNotEmpty ? Stack(
                     children: [
                       Stack(
-                        children: playerCards.map((card) {
-                          leftCards++;
+                        children: bjController.playerCards.map((card) {
+                          bjController.leftCards++;
                           return CardGame(
                             cardNumber: card.value,
                             color: card.color,
                             type: card.type,
-                            index: leftCards,
+                            index: bjController.leftCards,
                             size: "normal",
                           );
                         }).toList(),
@@ -383,8 +204,8 @@ class _TableScreenState extends State<TableScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
 
-                      ScoreCard(title: "Guest", score: playerScore,),
-                      ScoreCard(title: "Dealer", score: dealerScore,),
+                      ScoreCard(title: "Guest", score: bjController.playerScore,),
+                      ScoreCard(title: "Dealer", score: bjController.dealerScore,),
                     ],
                   ),
                 ),
@@ -408,8 +229,8 @@ class _TableScreenState extends State<TableScreen> {
                           child: Image.asset("assets/card.png"),
                         onTap: (){
 
-                         if(isPlayerPlay){
-                           playerIsPlaying();
+                         if(bjController.isPlayerPlay){
+                           bjController.playerIsPlaying();
                          }
 
                         },
@@ -417,13 +238,17 @@ class _TableScreenState extends State<TableScreen> {
                     ),
 
 
-                    (playerCards.length < 2  || !isPlayerPlay) ? SizedBox():
+                    (bjController.playerCards.length < 2  || !bjController.isPlayerPlay) ? SizedBox():
                     GestureDetector(
-                      onTap: (){
-                        dealerIsPlaying();
-                        setState(() {
-                          isPlayerPlay = false;
-                        });
+                      onTap: () async {
+                        bjController.changePlayer(false);
+                        gameMessage(context: context, message: "Dealer");
+                        await Future.delayed(Duration(seconds: 2));
+                        Navigator.pop(context);
+                        _controller.toggleCard();
+                        bjController.dealerIsPlaying();
+
+
                       },
                       child: AnimatedCard(
                         child: Container(
@@ -488,26 +313,28 @@ class _TableScreenState extends State<TableScreen> {
                     size: 40,
                     color: Colors.orange,
                   ),
-                  onPressed: () {}),
+                  onPressed: () {
+
+                  }),
               IconButton(
                   icon: Icon(
                     Icons.hdr_auto_outlined,
                     size: 35,
-                    color: isOneOrEleven ? Colors.grey : Colors.orange,
+                    color: bjController.isOneOrEleven ? Colors.grey : Colors.orange,
                   ),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           backgroundColor: Colors.amber[600],
-                            content: Text("A carta A vale ${isOneOrEleven ? "11" : "1"}",
+                            content: Text("A carta A vale ${bjController.isOneOrEleven ? "11" : "1"}",
                               style: TextStyle(
                                   color: Colors.black
                               ),)
                         ));
-                   setState(() {
-                     isOneOrEleven = !isOneOrEleven;
-                     playerScore = sumCardValues(cards: playerCards);
-                   });
+
+                     bjController.setAzOneOrEleven(!bjController.isOneOrEleven);
+                     //bjController.playerScore = bjController.sumCardValues(cards: playerCards);
+
 
                   }),
               Column(
@@ -520,7 +347,7 @@ class _TableScreenState extends State<TableScreen> {
                         color: Colors.orange,
                       ),
                       onPressed: () {
-                       resetGame();
+                        bjController.resetGame();
                       }),
                   Text(" Reset", style: TextStyle(color: Colors.orange, fontSize: 10),)
                 ],
