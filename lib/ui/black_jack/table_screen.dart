@@ -247,8 +247,8 @@ class _TableScreenState extends State<TableScreen> {
                     GestureDetector(
                       onTap: () async {
                         bjController.changePlayer(false);
-                        gameMessage(context: context, message: "Dealer");
-                        await Future.delayed(Duration(seconds: 2));
+                        gameMessageSimple(context: context, message: "Dealer");
+                        await Future.delayed(Duration(seconds: 3));
                         Navigator.pop(context);
                         _controller.toggleCard();
                         bjController.dealerIsPlaying();
@@ -319,7 +319,7 @@ class _TableScreenState extends State<TableScreen> {
                     color: Colors.orange,
                   ),
                   onPressed: () {
-
+                    //gameMessage(context: context, message: "ola");
                   }),
               IconButton(
                   icon: Icon(

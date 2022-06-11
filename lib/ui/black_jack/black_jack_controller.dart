@@ -117,7 +117,7 @@ class BlackJackController extends ChangeNotifier{
       saveCard("player");
 
       if(_sumCardValues(cards: playerCards) > 21){
-        _showMessage("Game Over");
+        _showMessage("Não foi dessa vez, continue tentando pois sua sorte pode mudar.", false);
         isPlayerPlay = false;
       }
 
@@ -146,9 +146,9 @@ class BlackJackController extends ChangeNotifier{
 
     }else{
       if(dealerScore > 21){
-        _showMessage("You Win!!");
+        _showMessage("Você ganhou 12.66 créditos, aproveite e continue jogando.", true);
       }else{
-        _showMessage("Game Over");
+        _showMessage("Não foi dessa vez, continue tentando pois sua sorte pode mudar.", false);
       }
     }
 
@@ -170,14 +170,10 @@ class BlackJackController extends ChangeNotifier{
     notifyListeners();
   }
 
-  _showMessage(String msg){
+  _showMessage(String msg, bool isWin){
     Future.delayed(Duration(seconds: 1),(){
-      gameMessage(context: context, message: msg);
+      gameMessage(context: context, message: msg, isWin: isWin)
+          .then((value) => resetGame());
     });
-
-    Future.delayed(Duration(seconds: 4),(){
-      Navigator.pop(context);
-    });
-
   }
 }

@@ -31,6 +31,16 @@ class AppStyles{
       letterSpacing: 2
   );
 
+  static TextStyle bodyBlack54Space = const TextStyle(
+      color: Colors.black54,
+      letterSpacing: 2
+  );
+
+  static TextStyle body14Black54 = const TextStyle(
+      color: Colors.black54,
+      fontSize: 14
+  );
+
   static TextStyle body25White54Bold = const TextStyle(
       color: Colors.white54,
       fontSize: 25,
